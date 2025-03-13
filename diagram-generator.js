@@ -22,30 +22,20 @@ const CLAUDE_API_URL = 'https://api.anthropic.com/v1/messages';
 async function extractSections(markdownContent) {
   console.log("File length:", markdownContent.length);
   
-  // Use a more flexible pattern to find diagram descriptions
-  // This pattern will match "**Something Diagram:**" followed by text
-  const diagramPattern = /\*\*([^*]+Diagram):\*\*([^\n]+)/g;
+  // Use a very simple pattern to find diagram descriptions
+  const diagramPattern = /\*\*([^:]+Diagram[^:]+)\*\*:([^\n]+)/g;
   
   const sections = [];
   let match;
   
   console.log("Searching for diagram descriptions...");
-  console.log("First 100 characters of file:", markdownContent.substring(0, 100));
   
   // Test if the pattern works on a known diagram description
-  const testString = "**Authentication Flow Diagram:** The diagram shows a sequence of steps";
-  const testMatch = testString.match(/\*\*([^*]+Diagram):\*\*([^\n]+)/);
+  const testString = "**Authentication Middleware Diagram:** The diagram shows a layered architecture";
+  const testMatch = diagramPattern.exec(testString);
   console.log("Test match:", testMatch ? "Found" : "Not found");
   if (testMatch) {
-    console.log("Test match:", testMatch[0]);
-  }
-  
-  // Test with a sample from the actual file
-  const sampleText = "**Agent Interface Diagram:** The diagram shows agent communication through contracts.";
-  const sampleMatch = sampleText.match(/\*\*([^*]+Diagram):\*\*([^\n]+)/);
-  console.log("Sample match:", sampleMatch ? "Found" : "Not found");
-  if (sampleMatch) {
-    console.log("Sample match:", sampleMatch[0]);
+    console.log("Test match groups:", testMatch[1], "|", testMatch[2]);
   }
   
   // Reset the regex state
@@ -77,22 +67,6 @@ async function extractSections(markdownContent) {
   
   if (sections.length === 0) {
     console.log("No diagram descriptions found. Check your markdown formatting.");
-    
-    // Additional debugging: Try to find any occurrences of "Diagram" in the text
-    const simpleDiagramMatches = markdownContent.match(/Diagram/g);
-    if (simpleDiagramMatches) {
-      console.log(`Found ${simpleDiagramMatches.length} occurrences of the word "Diagram" in the text.`);
-      
-      // Try to find any occurrences of "**" followed by "Diagram" within 30 chars
-      const starDiagramMatches = markdownContent.match(/\*\*[^*]{0,30}Diagram[^*]{0,30}\*\*/g);
-      if (starDiagramMatches && starDiagramMatches.length > 0) {
-        console.log(`Found ${starDiagramMatches.length} occurrences of "**" with "Diagram" inside.`);
-        console.log("Examples:");
-        starDiagramMatches.slice(0, 3).forEach(match => {
-          console.log(`  - ${match}`);
-        });
-      }
-    }
   } else {
     console.log(`Found ${sections.length} diagram descriptions.`);
   }
@@ -221,7 +195,7 @@ async function insertDiagramsIntoMarkdown(markdownContent, diagramSections) {
 /**
  * Processes a markdown file to generate and insert diagrams
  * @param {string} filePath - Path to the markdown file
- * @returns {Promise<string|null>} - Path to the output file or null if no diagrams found
+ * @returns {Promise<void>}
  */
 async function processMdFile(filePath) {
   try {
@@ -241,7 +215,7 @@ async function processMdFile(filePath) {
     
     if (sections.length === 0) {
       console.log("No diagram sections found. Exiting.");
-      return null;
+      return;
     }
     
     // Generate diagrams for each section
