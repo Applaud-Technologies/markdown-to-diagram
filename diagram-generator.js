@@ -153,7 +153,6 @@ Please return ONLY a valid Mermaid diagram code block that visualizes this conce
  */
 async function insertDiagramsIntoMarkdown(markdownContent, diagramSections) {
   let newContent = markdownContent;
-  let offset = 0;
   
   console.log(`Inserting ${diagramSections.length} diagrams into markdown...`);
   
@@ -168,24 +167,27 @@ async function insertDiagramsIntoMarkdown(markdownContent, diagramSections) {
     
     console.log(`Inserting diagram for "${section.diagramTitle}" at position ${section.matchIndex}`);
     
-    // Find the end of the paragraph containing the diagram description
-    const paragraphEnd = markdownContent.indexOf("\n\n", section.matchIndex);
-    section.endIndex = paragraphEnd !== -1 ? paragraphEnd : markdownContent.length;
-    
-    // Use the endIndex directly as the insertion position
-    const insertPosition = section.endIndex;
-    
-    if (insertPosition !== -1) {
-      console.log(`Found insertion position at ${insertPosition}`);
-      // Insert the mermaid diagram after the description paragraph
-      newContent = newContent.slice(0, insertPosition + offset) + 
-                  section.mermaidCode + 
-                  newContent.slice(insertPosition + offset);
+    // Use string replacement to add the diagram after the matched content
+    // This is more reliable than trying to find paragraph boundaries
+    if (section.fullMatch) {
+      console.log(`Replacing "${section.fullMatch}" with itself plus diagram`);
       
-      offset += section.mermaidCode.length;
-      console.log(`Updated offset to ${offset}`);
+      // Create the replacement string: original match + mermaid diagram
+      const replacement = `${section.fullMatch}${section.mermaidCode}`;
+      
+      // Replace the first occurrence of the match
+      // We use a simple string replacement rather than regex to avoid special character issues
+      const matchIndex = newContent.indexOf(section.fullMatch);
+      if (matchIndex !== -1) {
+        newContent = newContent.substring(0, matchIndex) + 
+                    replacement + 
+                    newContent.substring(matchIndex + section.fullMatch.length);
+        console.log(`Successfully inserted diagram after "${section.diagramTitle}"`);
+      } else {
+        console.log(`Could not find exact match for "${section.diagramTitle}" in the content`);
+      }
     } else {
-      console.log(`Could not find insertion position for "${section.diagramTitle}"`);
+      console.log(`Missing fullMatch for "${section.diagramTitle}"`);
     }
   }
   
