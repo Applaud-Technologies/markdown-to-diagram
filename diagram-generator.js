@@ -23,7 +23,7 @@ async function extractSections(markdownContent) {
   console.log("File length:", markdownContent.length);
   
   // Use a very simple pattern to find diagram descriptions
-  const diagramPattern = /\*\*([^:]+Diagram[^:]+)\*\*:([^\n]+)/g;
+  const diagramPattern = /\*\*(.*Diagram):?\*\*:?(.*[^\n])/g;
   
   const sections = [];
   let match;
