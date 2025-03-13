@@ -11,7 +11,13 @@ async function generateDiagrams(markdownFile, imageDir) {
     
     // Step 1: Generate diagrams and insert them into the markdown
     console.log('\n=== Step 1: Generating diagrams with Claude ===');
-    await processMdFile(markdownFile);
+    const outputPath = await processMdFile(markdownFile);
+    
+    // If no diagrams were found, exit gracefully
+    if (!outputPath) {
+      console.log('\n=== No diagrams found. Process completed. ===');
+      return;
+    }
     
     // Get the path of the generated markdown file with diagrams
     const dirName = path.dirname(markdownFile);
