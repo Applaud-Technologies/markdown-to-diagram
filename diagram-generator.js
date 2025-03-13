@@ -77,7 +77,7 @@ async function extractSections(markdownContent) {
 /**
  * Generates a Mermaid diagram using Claude AI
  * @param {Object} section - Section object containing diagram information
- * @returns {Object} - Section object with added mermaidCode property
+ * @returns {Object} - Section object with added mermaidCode and explanation properties
  */
 async function generateDiagramWithClaude(section) {
   if (!CLAUDE_API_KEY) {
@@ -92,10 +92,16 @@ Here's the description: "${section.diagramDescription}"
 Context from the section:
 ${section.sectionContent.substring(0, 2000)}...
 
-Please return ONLY a valid Mermaid diagram code block that visualizes this concept. The response should be structured as follows:
+Please provide:
+1. A valid Mermaid diagram code block that visualizes this concept
+2. A brief explanation of the diagram that helps readers understand it
+
+Your response should be structured as follows:
 \`\`\`mermaid
 // Your diagram code here
 \`\`\`
+
+**Explanation:** Your explanation of the diagram here.
 `;
 
     console.log(`Sending prompt to Claude for "${section.diagramTitle}"...`);
@@ -120,17 +126,28 @@ Please return ONLY a valid Mermaid diagram code block that visualizes this conce
 
     console.log(`Received response from Claude for "${section.diagramTitle}"`);
     
-    // Extract the mermaid code block from Claude's response
+    // Extract the mermaid code block and explanation from Claude's response
     const claudeResponse = response.data.content[0].text;
     console.log(`Claude response: "${claudeResponse.substring(0, 100)}..."`);
     
     const mermaidMatch = claudeResponse.match(/```mermaid\n([\s\S]*?)```/);
+    const explanationMatch = claudeResponse.match(/\*\*Explanation:\*\*([\s\S]*?)(?:$|(?=\n\n))/);
     
     if (mermaidMatch && mermaidMatch[1]) {
       console.log(`Found mermaid code: "${mermaidMatch[1].substring(0, 50)}..."`);
+      
+      let explanation = "";
+      if (explanationMatch && explanationMatch[1]) {
+        explanation = explanationMatch[1].trim();
+        console.log(`Found explanation: "${explanation.substring(0, 50)}..."`);
+      } else {
+        console.log("No explanation found in Claude's response");
+      }
+      
       return {
         ...section,
-        mermaidCode: `\n\n\`\`\`mermaid\n${mermaidMatch[1].trim()}\n\`\`\`\n\n`
+        mermaidCode: `\n\n\`\`\`mermaid\n${mermaidMatch[1].trim()}\n\`\`\`\n\n`,
+        explanation: explanation
       };
     } else {
       console.error("Failed to extract mermaid code from Claude's response");
@@ -172,8 +189,14 @@ async function insertDiagramsIntoMarkdown(markdownContent, diagramSections) {
     if (section.fullMatch) {
       console.log(`Replacing "${section.fullMatch}" with itself plus diagram`);
       
-      // Create the replacement string: original match + mermaid diagram
-      const replacement = `${section.fullMatch}${section.mermaidCode}`;
+      // Create the replacement string: original match + mermaid diagram + explanation
+      let replacement = `${section.fullMatch}${section.mermaidCode}`;
+      
+      // Add explanation if available
+      if (section.explanation && section.explanation.length > 0) {
+        console.log(`Adding explanation for "${section.diagramTitle}"`);
+        replacement += `**Diagram Explanation:** ${section.explanation}\n\n`;
+      }
       
       // Replace the first occurrence of the match
       // We use a simple string replacement rather than regex to avoid special character issues
