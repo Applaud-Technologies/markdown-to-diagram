@@ -1,0 +1,37 @@
+# Development files
+.git
+.github
+.gitignore
+.env
+.env.example
+.vscode
+.idea
+*.log
+*.swp
+*.swo
+
+# Test files
+test/
+tests/
+__tests__/
+coverage/
+.nyc_output/
+
+# Documentation
+docs/
+docs.zip
+CONTRIBUTING.md
+
+# Examples (keep the basic ones)
+examples/output-images/
+
+# Generated files
+*-with-diagrams.md
+*-with-images.md
+*-with-diagrams-images/
+
+# Misc
+.DS_Store
+Thumbs.db
+node_modules/
+npm-debug.log* 

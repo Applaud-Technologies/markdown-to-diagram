@@ -1,0 +1,39 @@
+{
+    "name": "markdown-to-diagram",
+    "version": "1.0.0",
+    "description": "A tool to generate Mermaid diagrams from markdown descriptions using Claude AI",
+    "main": "generate-diagrams.js",
+    "scripts": {
+        "start": "node generate-diagrams.js",
+        "generate": "node generate-diagrams.js",
+        "generate:diagrams": "node diagram-generator.js",
+        "convert:images": "node convert-diagrams-to-images.js",
+        "example": "node examples/run-example.js",
+        "test": "echo \"Error: no test specified\" && exit 1"
+    },
+    "keywords": [
+        "markdown",
+        "mermaid",
+        "diagrams",
+        "claude",
+        "ai",
+        "documentation",
+        "visualization"
+    ],
+    "author": "Applaud Technologies",
+    "license": "MIT",
+    "repository": {
+        "type": "git",
+        "url": "https://github.com/your-username/markdown-to-diagram"
+    },
+    "engines": {
+        "node": ">=14.0.0"
+    },
+    "dependencies": {
+        "@mermaid-js/mermaid-cli": "^11.4.2",
+        "axios": "^1.6.2",
+        "canvas": "^3.1.0",
+        "dotenv": "^16.3.1",
+        "markdown-mermaid-exporter": "^1.0.2"
+    }
+}
